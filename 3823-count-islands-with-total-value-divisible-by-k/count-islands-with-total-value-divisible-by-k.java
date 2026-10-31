@@ -1,26 +1,28 @@
 class Solution {
     public int countIslands(int[][] grid, int k) {
-        int m = grid.length, n = grid[0].length;
-        int ans = 0;
-        for (int i = 0; i < m; i++) {
+        int m = grid.length, n = grid[0].length, ans = 0;
+        int[] dirs = {1, 0, -1, 0, 1};  // down, left, up, right
+        int[] island = new int[m * n];  // cells stored as x * n + y, reused for every island
+        for (int i = 0; i < m; i++)
             for (int j = 0; j < n; j++) {
-                if (grid[i][j] > 0) {
-                    long s = dfs(grid, i, j);
-                    if (s % k == 0) ans++;
+                if (grid[i][j] == 0) continue;
+                long total = grid[i][j];  // can reach 1e11: needs a long
+                grid[i][j] = 0;
+                int size = 0;
+                island[size++] = i * n + j;
+                for (int h = 0; h < size; h++) {  // the list grows while we walk it: a BFS queue
+                    int x = island[h] / n, y = island[h] % n;
+                    for (int d = 0; d < 4; d++) {
+                        int a = x + dirs[d], b = y + dirs[d + 1];
+                        if (a >= 0 && a < m && b >= 0 && b < n && grid[a][b] != 0) {
+                            total += grid[a][b];
+                            grid[a][b] = 0;  // sink it so it's counted once
+                            island[size++] = a * n + b;
+                        }
+                    }
                 }
+                if (total % k == 0) ans++;
             }
-        }
         return ans;
-    }
-    private long dfs(int[][] grid, int i, int j) {
-        int m = grid.length, n = grid[0].length;
-        if (i < 0 || i >= m || j < 0 || j >= n || grid[i][j] == 0) return 0;
-        long sum = grid[i][j];
-        grid[i][j] = 0;
-        sum += dfs(grid, i + 1, j);
-        sum += dfs(grid, i - 1, j);
-        sum += dfs(grid, i, j + 1);
-        sum += dfs(grid, i, j - 1);
-        return sum;
     }
 }
